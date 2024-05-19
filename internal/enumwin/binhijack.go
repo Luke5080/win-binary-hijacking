@@ -2,6 +2,6 @@ package enumwin
 
 import "fmt"
 
-func ChangeBinPath(ws *WeakServ, option string) {
+func ChangeBinPath(ws *WeakServ) {
 	fmt.Println(ws.BinPath)
 }
