@@ -3,10 +3,24 @@ package main
 import (
 	"fmt"
 
+	"os"
+
 	"github.com/Luke5080/win-binary-hijacking/internal/enumwin"
+	"github.com/fatih/color"
 )
 
 func main() {
+	homeDir, _ := os.UserHomeDir()
+
+	text, err := os.ReadFile(homeDir + `\win-binary-hijacking\internal\banner\banner.txt`)
+
+	if err != nil {
+		color.Red("Could not read banner: ", err)
+	}
+
+	color.Red(string(text))
+
+	color.Red("Author: Luke Marshall\n\n")
 
 	// Slice holding of type *enum.WeakServ to display
 	// choice of services that are exploitable to the user.
@@ -14,7 +28,7 @@ func main() {
 
 	var userChoice int
 
-	fmt.Println("HIJACKED!")
+	binaryChoice := [3]string{"Reverse Shell", "Key logger", "Custom binary"}
 
 	chanBack := enumwin.EnumServ()
 
@@ -25,16 +39,16 @@ func main() {
 	}
 
 	if len(userOptions) > 0 {
-		fmt.Println("Can Modify the following services:")
+		color.Red("\n\nCan Modify the following services:\n")
 
 		// Display each entry in the userOptions slice
 		// as well as their index to provide menu of
 		// options for the user
 		for index, val := range userOptions {
-			fmt.Println(index+1, val.Name)
+			color.Red("%d: %s", index+1, val.Name)
 		}
 
-		fmt.Println("Choose a service to modify:")
+		color.Red("Choose a service to modify:\n")
 
 		r, err := fmt.Scanln(&userChoice)
 
@@ -49,10 +63,16 @@ func main() {
 			r, err = fmt.Scanln(&userChoice)
 		}
 
-		enumwin.ChangeBinPath(userOptions[userChoice-1])
+		color.Red("\n\nWhat binary would you like to replace the service binary with?")
+
+		for index, val := range binaryChoice {
+			color.Red("%d: %s", index+1, val)
+		}
+
+		//enumwin.ChangeBinPath(userOptions[userChoice-1])
 
 	} else {
-		fmt.Println("No services found which you can modify")
+		color.Red("No services found which you can modify")
 	}
 
 }

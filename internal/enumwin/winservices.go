@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/fatih/color"
 )
 
 type WeakServ struct {
@@ -38,14 +40,14 @@ func makeWeakServ(serv map[string]string, c chan *WeakServ, wg *sync.WaitGroup) 
 	regexStart, err := regexp.Compile(servStart)
 
 	if err != nil {
-		fmt.Println("Cannot compile regex", err)
+		color.Red("Cannot compile regex", err)
 		return
 	}
 
 	regexStop, err := regexp.Compile(servStop)
 
 	if err != nil {
-		fmt.Println("Cannot compile regex", err)
+		color.Red("Cannot compile regex", err)
 		return
 	}
 
@@ -70,13 +72,13 @@ func makeWeakServ(serv map[string]string, c chan *WeakServ, wg *sync.WaitGroup) 
 	out, err := cmd.StdoutPipe()
 
 	if err != nil {
-		fmt.Println(err)
+		color.Red("Error: ", err)
 	}
 
 	err = cmd.Start()
 
 	if err != nil {
-		fmt.Println(err)
+		color.Red("Error:", err)
 	}
 
 	scanner := bufio.NewScanner(out)
@@ -98,12 +100,12 @@ func checkServPerms(serv string, c chan map[string]string, wg *sync.WaitGroup) {
 	// who is in not in a  user group, the service needs
 	// to have write perms as an AUTHENTICATED USER.
 	// Regex pattern should look like the following:
-	pattern := `\(A;;[^;]*DC[^;]*\;;\;AU\)`
+	pattern := `\(A;;[^;]*W[^;]*\;;\;AU\)`
 
 	compileRegex, err := regexp.Compile(pattern)
 
 	if err != nil {
-		fmt.Println("Cannot compile regex", err)
+		color.Red("Cannot compile regex", err)
 		return
 	}
 
@@ -113,13 +115,13 @@ func checkServPerms(serv string, c chan map[string]string, wg *sync.WaitGroup) {
 	out, err := exec.Command("sc", "sdshow", serv).Output()
 
 	if err != nil {
-		fmt.Printf("Error %v: with service: %s\n", err, serv)
+		color.Red("Error %v: with service: %s\n", err, serv)
 	}
 
 	// Match it against the regex pattern. If the pattern
 	// matches, append service name to the channel
 	if compileRegex.MatchString(string(out)) {
-		fmt.Printf("Can Modify Service: %s\n", serv)
+		color.Green("Can Modify Service: %s\n", serv)
 
 		sddlStr := map[string]string{serv: string(out)}
 		c <- sddlStr
@@ -131,7 +133,7 @@ func getServ() []string {
 	// Function to grab all services on the user system
 	// Done by running a PS command and append the results
 	// to a slice of strings
-	fmt.Println("Finding all services on system..")
+	color.Red("Finding all services on system..")
 
 	allServ := []string{}
 
@@ -141,7 +143,7 @@ func getServ() []string {
 	out, err := cmd.StdoutPipe()
 
 	if err != nil {
-		fmt.Println("Could not execute command")
+		color.Red("Could not execute command")
 	}
 
 	defer out.Close()
@@ -149,7 +151,7 @@ func getServ() []string {
 	err = cmd.Start()
 
 	if err != nil {
-		fmt.Println("Could not run command")
+		color.Red("Could not run command")
 	}
 
 	// Create scanner to read command output stored in `out`
@@ -170,7 +172,7 @@ func getServ() []string {
 			allServ = append(allServ, line)
 		}
 	}
-	fmt.Printf("Found %d services on target machine\n", len(allServ))
+	color.Red("Found %d services on target machine\n", len(allServ))
 	return allServ
 }
 
@@ -187,7 +189,7 @@ func EnumServ() chan *WeakServ {
 	// weak services to the canModify channel
 	for _, serv := range localServ {
 		wg.Add(1)
-		fmt.Printf("Checking Service permissions: %s\n", serv)
+		color.Red("Checking Service permissions: %s\n", serv)
 		go checkServPerms(serv, canModify, wg)
 	}
 
@@ -207,7 +209,7 @@ func EnumServ() chan *WeakServ {
 			servname = key
 		}
 
-		fmt.Printf("Grabbing information for service: %s\n", servname)
+		color.Green("Grabbing information for service: %s\n", servname)
 		go makeWeakServ(val, serviceStruct, wgServ)
 	}
 
