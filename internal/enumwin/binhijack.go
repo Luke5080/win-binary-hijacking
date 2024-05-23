@@ -16,7 +16,7 @@ func ChangeBinPath(serv *WeakServ, choice int) *WeakServ {
 	// Hold user home directory and append revshell path to it
 	homeDir, _ := os.UserHomeDir()
 
-	// Fix home dir format here. Change delimeter to / and send make
+	// Fix home dir format here. Change delimeter to / and make
 	// it lowercase. Idk why this works.
 	homeDir = strings.ToLower(strings.Replace(homeDir, `\`, `/`, -1))
 
@@ -40,8 +40,9 @@ func ChangeBinPath(serv *WeakServ, choice int) *WeakServ {
 	return serv
 }
 
-func StartServ(serv *WeakServ) {
+func StartServ(serv *WeakServ) error {
 	// Function to start exploited service
+	// Returns error of net start command
 
 	cmd := exec.Command("net", "start", serv.Name)
 
@@ -49,7 +50,26 @@ func StartServ(serv *WeakServ) {
 
 	if err != nil {
 		color.Red("Could not start service: %s", serv.Name)
+
 	} else {
 		color.Red("Service started")
 	}
+	return err
+}
+
+func StopServ(serv *WeakServ) error {
+	// Function to stop exploited service
+	// Returns error of net stop command
+
+	cmd := exec.Command("net", "stop", serv.Name)
+
+	err := cmd.Run()
+
+	if err != nil {
+		color.Red("Could not start service: %s", serv.Name)
+
+	} else {
+		color.Red("Service started")
+	}
+	return err
 }

