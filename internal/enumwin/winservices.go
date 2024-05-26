@@ -121,7 +121,7 @@ func checkServPerms(serv string, c chan map[string]string, wg *sync.WaitGroup, m
 	// who is in not in a  user group, the service needs
 	// to have write perms as an AUTHENTICATED USER.
 	// Regex pattern should look like the following:
-	pattern := `\(A;;[^;]*W[^;]*\;;\;AU\)`
+	pattern := `\(A;;[^;]*DC[^;]*\;;\;AU\)`
 
 	compileRegex, err := regexp.Compile(pattern)
 

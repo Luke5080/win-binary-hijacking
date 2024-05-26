@@ -18,7 +18,7 @@ func main() {
 
 	var userChoice, binaryChoice int
 
-	binaryOptions := [3]string{"Reverse Shell", "Key logger", "Custom binary"}
+	binaryOptions := [2]string{"Reverse Shell", "Custom binary"}
 
 	homeDir, _ := os.UserHomeDir()
 
@@ -98,7 +98,7 @@ func main() {
 			r, err = fmt.Scanln(&binaryChoice)
 		}
 
-		ws := enumwin.ChangeBinPath(userOptions[userChoice-1], binaryChoice)
+		ws := enumwin.ChangeBinPath(userOptions[userChoice-1], binaryChoice, m)
 
 		if ws.CanStart && ws.CanStop {
 			var startChoice string
@@ -138,7 +138,8 @@ func main() {
 			}
 
 		} else {
-			m.CD.Println("You don't seem to have appropiate permissions to start/restart service.")
+			m.CD.Println("Service start type has been set to AUTO_START")
+			m.CD.Println("Please reboot this system to start service")
 		}
 
 	} else {
