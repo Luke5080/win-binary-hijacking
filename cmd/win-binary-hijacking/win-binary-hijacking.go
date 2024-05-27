@@ -130,6 +130,11 @@ func main() {
 
 				m.CG.Println("Service started succesfully")
 
+				m.CG.Println("Service Name: ", ws.Name)
+				m.CG.Println("Start Type: ", ws.StartMode)
+				m.CG.Println("Starts As: ", ws.StartName)
+				m.CG.Println("New binary path: ", ws.BinPath)
+
 			case "n":
 				m.CD.Println("Exiting")
 				os.Exit(1)
@@ -140,6 +145,11 @@ func main() {
 		} else {
 			m.CD.Println("Service start type has been set to AUTO_START")
 			m.CD.Println("Please reboot this system to start service")
+
+			m.CG.Println("Service Name: ", ws.Name)
+			m.CG.Println("Start Type: ", ws.StartMode)
+			m.CG.Println("Starts As: ", ws.StartName)
+			m.CG.Println("New binary path: ", ws.BinPath)
 		}
 
 	} else {

