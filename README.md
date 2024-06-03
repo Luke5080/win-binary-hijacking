@@ -30,5 +30,7 @@ If you choose option 2, the script will prompt for the path of the executable wh
 4. The script will then attempt to replace the choosen service's binary path with the new malicious binary. If succesful, it will check whether you have appropriate permissions to start/stop the service, so that the new malicious binary can be executed. If you do have these permissions, the script will prompt whether you would to restart the service:  
 `Can Start/Stop Service...`  
 `Restart Service? [y/n]`  
-Choosing `n` will exit the script, where as `y` will stop then start the service. If the script can start/stop the service sucesfully, the script will exit and the service will have started with your new malicious binary. If you do not have succifient permissions to start/stop the service, the script will modify the service for the start type to be set as `AUTO_START`, which will require for you to restart the target system for the service to be started.
+Choosing `n` will exit the script, where as `y` will stop then start the service. If the script can start/stop the service sucesfully, the script will exit and the service will have started with your new malicious binary. If you do not have succifient permissions to start/stop the service, the script will modify the service for the start type to be set as `AUTO_START`, which will require for you to restart the target system for the service to be started.  
 
+### Personal Notes:  
+The source code for the reverse shell used in this script can be found [here](https://github.com/Luke5080/go-reverse-shell)  

@@ -42,7 +42,6 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 
 		malPath := fmt.Sprintf(homeDir + `/win-binary-hijacking/internal/malbinaries/revshell.exe`)
 
-		fmt.Println(malPath)
 		// Formatting sc config portion here
 
 		if serv.CanStart && serv.CanStop {
